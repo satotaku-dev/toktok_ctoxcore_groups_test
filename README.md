@@ -1,4 +1,4 @@
-/* PROTOCOL - THESE POINTS MUST BE FOLLOWED WHEN MODIFYING THE CODE 
+PROTOCOL - THESE POINTS MUST BE FOLLOWED WHEN MODIFYING THE CODE 
 1) Any node has a regular tox_id - this will be the id for joining the group 
 2) That is, when someone sends a friend request (node A) - we automatically accept it (node B) 
 3) After we have accepted a friend (node A) - the friend (node B) sends a request by message to node A to be given a list of others 
@@ -23,4 +23,4 @@ Moderation
 3) everyone who received {...,"cmd":"ban_id:xxxxxxxxxx",...} should add the admin as a friend directly if they have not already done so. 
 4) If {...,"cmd":"ban_id:xxxxxxxxxx",...} did not come directly from the admin, we send a message directly to the admin {...,"cmd":"checkban_id:xxxxxxxxxx",...} 
 5) The admin checks his blacklist and if a ban is really necessary, he sends it back directly this time {...,"cmd":"ban_id:xxxxxxxxxx",...} 
-*/
+
