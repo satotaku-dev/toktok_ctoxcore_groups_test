@@ -150,7 +150,6 @@ The current implementation is intentionally different from the native `tox_group
 | Dynamic membership                                                            |                                    🟢                                    |                   🟢                   |
 | Implementation complexity                                                     |                                  🟢 Low                                  |                 🔴 High                |
 | Easy to prototype without modifying toxcore                                   |                                    🟢                                    |                   🔴                   |
-| Suitable as a native Tox group implementation                                 |                                   🔴 No                                  |                   🟢                   |
 
 
 ### Important reliability note
