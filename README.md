@@ -124,7 +124,7 @@ The current implementation is intentionally different from the native `tox_group
 | **Public / discoverable group model**                                         |                                🟢 Possible                               |             🔴 Invite-based            |
 | Built on ordinary 1:1 Tox friendships                                         |                                    🟢                                    | 🟡 Uses temporary `friend_connection`s |
 | Requires changes to toxcore                                                   |                                   🟢 No                                  |                 🔴 Yes                 |
-| Maximum direct connections per peer                                           |                     🟡 Depends on the implementation                     |                🟢 **4**                |
+| Maximum direct connections per peer                                           |                       🟡 Depends on implementation                       |                🟢 **4**                |
 | Deterministic peer topology                                                   |                                   🔴 No                                  |                 🟢 Yes                 |
 | Automatic topology recalculation                                              |                           🟡 Via peer discovery                          |                 🟢 Yes                 |
 | Redundant paths between peers                                                 |                            🟢 Potentially many                           |               🟡 Limited               |
@@ -134,7 +134,14 @@ The current implementation is intentionally different from the native `tox_group
 | ACK + retry can be added                                                      |                                    🟢                                    |                   🟢                   |
 | Retry through an alternative peer                                             |                                    🟢                                    |                   🟢                   |
 | Message deduplication                                                         |                              🟢 `message_id`                             |                   🟢                   |
-| Cryptographic message signatures                                              |                       🟡 Not currently implemented                       |      🟡 Depends on protocol layer      |
+| **Built-in administrator / group owner**                                      |                             🟢 `admin_tox_id`                            |      🟡 Depends on group protocol      |
+| **Administrator can ban participants**                                        |                                🟢 **Yes**                                |      🟡 Depends on group protocol      |
+| **Ban command propagation**                                                   |                      🟡 Gossip + admin confirmation                      |                   🟡                   |
+| **Ban requires authenticated admin connection**                               |                                🟢 **Yes**                                |                   🟡                   |
+| **Protection against a relayed peer impersonating the admin**                 |    🟢 **Yes** — relayed bans require confirmation from the real admin    |                   🟡                   |
+| **Cryptographic signatures over moderation commands**                         |                     🔴 **Not currently implemented**                     |      🟡 Depends on protocol layer      |
+| **Ban state synchronized to newly joined peers**                              |                                 🔴 **No**                                |      🟡 Depends on implementation      |
+| Cryptographic message signatures                                              |                       🔴 Not currently implemented                       |      🟡 Depends on protocol layer      |
 | Protection against relay modifying a message                                  | 🟡 Tox authenticates the connection, but there are no message signatures |                   🟡                   |
 | Gossip / flooding                                                             |                                    🟢                                    |                   🟡                   |
 | Traffic control                                                               |                                    🟡                                    |                   🟢                   |
@@ -144,6 +151,7 @@ The current implementation is intentionally different from the native `tox_group
 | Implementation complexity                                                     |                                  🟢 Low                                  |                 🔴 High                |
 | Easy to prototype without modifying toxcore                                   |                                    🟢                                    |                   🔴                   |
 | Suitable as a native Tox group implementation                                 |                                   🔴 No                                  |                   🟢                   |
+
 
 ### Important reliability note
 
