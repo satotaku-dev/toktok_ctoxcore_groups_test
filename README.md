@@ -112,4 +112,85 @@
  - blacklist is not explicitly synchronized when a new participant joins -
    they learn about bans only from those group_message messages that reach
    them after they come online.
- 
+
+
+ ## Pseudo-group vs. Native Tox Group
+
+The current implementation is intentionally different from the native `tox_group_*` architecture. The main trade-offs are:
+
+| Feature                                                                       |                      Pseudo-group on Tox friendships                     |            Native Tox Group            |
+| ----------------------------------------------------------------------------- | :----------------------------------------------------------------------: | :------------------------------------: |
+| **Join a public group without an invitation, using any participant's Tox ID** |                                🟢 **Yes**                                |                🔴 **No**               |
+| **Public / discoverable group model**                                         |                                🟢 Possible                               |             🔴 Invite-based            |
+| Built on ordinary 1:1 Tox friendships                                         |                                    🟢                                    | 🟡 Uses temporary `friend_connection`s |
+| Requires changes to toxcore                                                   |                                   🟢 No                                  |                 🔴 Yes                 |
+| Maximum direct connections per peer                                           |                     🟡 Depends on the implementation                     |                🟢 **4**                |
+| Deterministic peer topology                                                   |                                   🔴 No                                  |                 🟢 Yes                 |
+| Automatic topology recalculation                                              |                           🟡 Via peer discovery                          |                 🟢 Yes                 |
+| Redundant paths between peers                                                 |                            🟢 Potentially many                           |               🟡 Limited               |
+| Resilience to individual peer failures                                        |                            🟢 Potentially good                           |         🟡 Depends on topology         |
+| Predictable routing                                                           |                                    🟡                                    |                   🟢                   |
+| Best-effort message delivery                                                  |                                    🟢                                    |                   🟢                   |
+| ACK + retry can be added                                                      |                                    🟢                                    |                   🟢                   |
+| Retry through an alternative peer                                             |                                    🟢                                    |                   🟢                   |
+| Message deduplication                                                         |                              🟢 `message_id`                             |                   🟢                   |
+| Cryptographic message signatures                                              |                       🟡 Not currently implemented                       |      🟡 Depends on protocol layer      |
+| Protection against relay modifying a message                                  | 🟡 Tox authenticates the connection, but there are no message signatures |                   🟡                   |
+| Gossip / flooding                                                             |                                    🟢                                    |                   🟡                   |
+| Traffic control                                                               |                                    🟡                                    |                   🟢                   |
+| Scalability                                                                   |                                    🟡                                    |                   🟢                   |
+| Bandwidth efficiency                                                          |                   🟡 Depends on flooding and group size                  |                   🟢                   |
+| Dynamic membership                                                            |                                    🟢                                    |                   🟢                   |
+| Implementation complexity                                                     |                                  🟢 Low                                  |                 🔴 High                |
+| Easy to prototype without modifying toxcore                                   |                                    🟢                                    |                   🔴                   |
+| Suitable as a native Tox group implementation                                 |                                   🔴 No                                  |                   🟢                   |
+
+### Important reliability note
+
+The current pseudo-group implementation uses gossip flooding and therefore does **not guarantee delivery**. A message is initially sent to 3 randomly selected connected friends, and recipients forward it to other eligible friends.
+
+This provides redundant paths when the friendship graph is well connected, but it does not provide an end-to-end delivery guarantee.
+
+A future reliable-delivery layer could add:
+
+```text
+MESSAGE(message_id)
+        │
+        ▼
+     peer
+        │
+        ├── ACK(message_id)
+        │
+        └── timeout
+              │
+              ▼
+       retry via another peer
+```
+
+Together with the existing `message_id` deduplication, this would provide an **at-least-once delivery** model while allowing duplicate transmissions to be safely ignored.
+
+For stronger guarantees, ACKs could also be used to track which participants have received a particular message.
+
+### Message authenticity
+
+The current protocol relies on Tox connection-level authentication: a `friend_number` is associated with the authenticated Tox public key of the peer that actually delivered the message.
+
+However, group messages themselves are **not cryptographically signed**.
+
+Therefore, if a message is relayed through multiple peers, the protocol currently authenticates **the connection that delivered the message**, but does not provide a cryptographic proof inside the message itself that a particular participant originally authored its contents.
+
+A future version could sign the original group message with the sender's long-term private key:
+
+```text
+sender_public_key
+group_id / admin_id
+message_id
+timestamp
+message_body
+        │
+        ▼
+signature = Sign(sender_private_key, message_hash)
+```
+
+The original message and signature could then be forwarded unchanged through the gossip network. This would allow every recipient to independently verify the original author's identity and detect any modification by relay nodes.
+
