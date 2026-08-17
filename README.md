@@ -1,6 +1,5 @@
- ============================================================================
+
  PSEUDO-GROUP PROTOCOL ON TOP OF TOX (current implementation)
- ============================================================================
 
  This is NOT a real Tox group chat (tox_group_*) - this is a protocol built
  on top of ordinary 1:1 Tox friendships (friend_number), where "group" is
@@ -113,4 +112,4 @@
  - blacklist is not explicitly synchronized when a new participant joins -
    they learn about bans only from those group_message messages that reach
    them after they come online.
- ============================================================================
+ 
